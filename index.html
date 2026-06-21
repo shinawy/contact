@@ -14,6 +14,7 @@
 ════════════════════════════════════════════════════════════════ -->
 <script>
 const CARD = {
+  photo:       "headshot.jpg",   // file in this folder; set "" to hide
   name:        "Mahmoud A. Elshenawy",
   title:       "PhD Candidate · Computer Science",
   affiliation: "ACCL, King Abdullah University of Science and Technology (KAUST)",
@@ -63,6 +64,16 @@ const CARD = {
   }
   header{
     margin-bottom:26px;
+  }
+  .avatar{
+    width:88px;
+    height:88px;
+    border-radius:50%;
+    object-fit:cover;
+    display:block;
+    margin:0 0 14px;
+    border:3px solid var(--panel);
+    box-shadow:0 2px 10px rgba(21,25,30,.12);
   }
   .name{
     font-size:1.7rem;
@@ -149,6 +160,7 @@ const CARD = {
 <body>
   <main class="card">
     <header>
+      <img class="avatar" id="js-photo" alt="" style="display:none">
       <h1 class="name" id="js-name"></h1>
       <p class="title" id="js-title"></p>
       <p class="affil" id="js-affil"></p>
@@ -187,6 +199,13 @@ const CARD = {
     document.getElementById("js-affil").textContent = CARD.affiliation || "";
     document.getElementById("js-foot").textContent  = CARD.name;
 
+    if(CARD.photo){
+      const ph = document.getElementById("js-photo");
+      ph.src = CARD.photo;
+      ph.alt = CARD.name;
+      ph.style.display = "block";
+    }
+
     function iconFor(tag){ return ICONS[tag] || ICONS.WEBSITE; }
 
     const list = document.getElementById("js-links");
@@ -213,7 +232,22 @@ const CARD = {
     btn.innerHTML = ICONS.SAVE + '<span>Save contact</span>';
     const v = CARD.vcard || {};
     if(!v.email && !v.phone){ btn.style.display="none"; }
-    btn.addEventListener("click", function(){
+    async function photoLine(){
+      if(!CARD.photo) return null;
+      try{
+        const resp = await fetch(CARD.photo);
+        const blob = await resp.blob();
+        const b64  = await new Promise(function(res,rej){
+          const r = new FileReader();
+          r.onloadend = function(){ res(String(r.result).split(",")[1]); };
+          r.onerror = rej;
+          r.readAsDataURL(blob);
+        });
+        const type = (blob.type.split("/")[1] || "jpeg").toUpperCase();
+        return "PHOTO;ENCODING=b;TYPE="+type+":"+b64;
+      }catch(e){ return null; }
+    }
+    btn.addEventListener("click", async function(){
       const lines = ["BEGIN:VCARD","VERSION:3.0","FN:"+CARD.name];
       if(CARD.title) lines.push("TITLE:"+CARD.title);
       if(CARD.affiliation) lines.push("ORG:"+CARD.affiliation);
@@ -222,6 +256,8 @@ const CARD = {
       (CARD.links||[]).forEach(function(i){
         if(!i.url.startsWith("mailto:") && !i.url.startsWith("tel:")) lines.push("URL:"+i.url);
       });
+      const pl = await photoLine();
+      if(pl) lines.push(pl);
       lines.push("END:VCARD");
       const blob = new Blob([lines.join("\r\n")], {type:"text/vcard"});
       const url = URL.createObjectURL(blob);

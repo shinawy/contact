@@ -8,21 +8,30 @@
 <!-- ════════════════════════════════════════════════════════════════
      EDIT ONLY THIS BLOCK. Everything below renders from it.
      Delete any line you don't want (it just won't show).
+     The "tag" picks the icon. Valid tags:
+       EMAIL PHONE WEBSITE PAPER CV SCHOLAR ORCID
+       GITHUB LINKEDIN TWITTER BLUESKY RESEARCHGATE
 ════════════════════════════════════════════════════════════════ -->
 <script>
 const CARD = {
   name:        "Your Name",
   title:       "PhD Candidate · Biomechanics & FPGA DSP",
-  affiliation: "Semmelweis University / Cairo University / KAUST",
+  affiliation: "Lab / Group · Semmelweis University",
   links: [
-    { tag: "EMAIL",    label: "you@example.com",        url: "mailto:you@example.com" },
-    { tag: "LINKEDIN", label: "linkedin.com/in/you",    url: "https://www.linkedin.com/in/you" },
-    { tag: "SCHOLAR",  label: "Google Scholar profile", url: "https://scholar.google.com/citations?user=XXXX" },
-    { tag: "ORCID",    label: "0000-0000-0000-0000",    url: "https://orcid.org/0000-0000-0000-0000" },
-    { tag: "GITHUB",   label: "github.com/you",         url: "https://github.com/you" },
+    { tag: "EMAIL",        label: "you@university.edu",          url: "mailto:you@university.edu" },
+    { tag: "PAPER",        label: "This work (PDF / preprint)",  url: "https://arxiv.org/abs/XXXX.XXXXX" },
+    { tag: "WEBSITE",      label: "yourname.github.io",          url: "https://yourname.github.io" },
+    { tag: "CV",           label: "Curriculum Vitae (PDF)",      url: "https://yourname.github.io/cv.pdf" },
+    { tag: "SCHOLAR",      label: "Google Scholar profile",      url: "https://scholar.google.com/citations?user=XXXX" },
+    { tag: "ORCID",        label: "0000-0000-0000-0000",         url: "https://orcid.org/0000-0000-0000-0000" },
+    { tag: "RESEARCHGATE", label: "ResearchGate profile",        url: "https://www.researchgate.net/profile/you" },
+    { tag: "GITHUB",       label: "github.com/you",              url: "https://github.com/you" },
+    { tag: "LINKEDIN",     label: "linkedin.com/in/you",         url: "https://www.linkedin.com/in/you" },
+    { tag: "TWITTER",      label: "x.com/you",                   url: "https://x.com/you" },
+    { tag: "BLUESKY",      label: "you.bsky.social",             url: "https://bsky.app/profile/you.bsky.social" },
   ],
   // For the "Save contact" button (vCard). Leave email/phone blank to skip.
-  vcard: { email: "you@example.com", phone: "" }
+  vcard: { email: "you@university.edu", phone: "+00 000 000 0000" }
 };
 </script>
 <!-- ════════════════════════════════════════════════════════════════ -->
@@ -92,28 +101,34 @@ const CARD = {
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:var(--radius);
-    padding:14px 16px;
-    transition:border-color .15s ease, transform .15s ease;
+    padding:12px 14px;
+    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
   }
-  a.row:hover{border-color:var(--accent);transform:translateY(-1px)}
+  a.row:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(15,94,90,.08)}
   a.row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .tag{
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    font-size:.66rem;
-    letter-spacing:.08em;
-    color:var(--accent);
-    background:var(--accent-soft);
-    border-radius:6px;
-    padding:5px 7px;
-    min-width:78px;
-    text-align:center;
+  .icon{
+    width:40px;
+    height:40px;
     flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--accent-soft);
+    color:var(--accent);
+    border-radius:10px;
+    transition:background .15s ease, color .15s ease;
   }
+  a.row:hover .icon{background:var(--accent);color:#fff}
+  .icon svg{width:22px;height:22px;fill:currentColor;display:block}
   .lbl{font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .arrow{margin-left:auto;color:var(--muted);flex:0 0 auto}
   button.save{
     margin-top:22px;
     width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
     border:none;
     background:var(--accent);
     color:#fff;
@@ -125,11 +140,12 @@ const CARD = {
     font-family:inherit;
     transition:opacity .15s ease;
   }
+  button.save svg{width:18px;height:18px;fill:currentColor}
   button.save:hover{opacity:.9}
   button.save:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
   footer{margin-top:20px;text-align:center;color:var(--muted);font-size:.74rem}
   @media (prefers-reduced-motion:reduce){
-    a.row,button.save{transition:none}
+    a.row,button.save,.icon{transition:none}
   }
 </style>
 </head>
@@ -144,12 +160,29 @@ const CARD = {
 
     <ul class="links" id="js-links"></ul>
 
-    <button class="save" id="js-save" type="button">Save contact</button>
+    <button class="save" id="js-save" type="button"></button>
 
     <footer id="js-foot"></footer>
   </main>
 
 <script>
+  // SVG icon set. 24×24 viewBox, single path, fill=currentColor.
+  const ICONS = {
+    EMAIL:        '<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>',
+    PHONE:        '<svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>',
+    WEBSITE:      '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>',
+    PAPER:        '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>',
+    CV:           '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 12H8v-.75c0-1.33 2.67-2 4-2s4 .67 4 2V18z"/></svg>',
+    SCHOLAR:      '<svg viewBox="0 0 24 24"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>',
+    ORCID:        '<svg viewBox="0 0 24 24"><path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 4.378c.525 0 .947.431.947.947 0 .525-.422.947-.947.947a.95.95 0 0 1-.947-.947c0-.525.422-.947.947-.947zm-.722 3.038h1.444v10.041H6.647V7.416zm3.562 0h3.9c3.712 0 5.344 2.653 5.344 5.025 0 2.578-2.016 5.025-5.325 5.025h-3.919V7.416zm1.444 1.303v7.444h2.297c3.272 0 4.022-2.484 4.022-3.722 0-2.016-1.284-3.722-4.097-3.722h-2.222z"/></svg>',
+    GITHUB:       '<svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>',
+    LINKEDIN:     '<svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>',
+    TWITTER:      '<svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+    BLUESKY:      '<svg viewBox="0 0 24 24"><path d="M5.07 3.469C7.745 5.477 10.622 9.548 11.68 11.733c.058.12.11.227.157.321.046-.094.099-.2.157-.32 1.058-2.186 3.935-6.257 6.61-8.265C20.537 2.022 24 .957 24 4.908c0 .79-.452 6.632-.717 7.584-.925 3.305-4.295 4.148-7.293 3.638 5.24.892 6.573 3.846 3.694 6.8-5.469 5.61-7.86-1.407-8.472-3.205-.112-.33-.165-.484-.165-.353 0-.13-.053.024-.165.353-.612 1.798-3.003 8.815-8.472 3.205-2.879-2.954-1.546-5.908 3.694-6.8-2.998.51-6.368-.333-7.293-3.638C.452 11.54 0 5.698 0 4.908 0 .957 3.463 2.022 5.07 3.469z"/></svg>',
+    RESEARCHGATE: '<svg viewBox="0 0 24 24"><path d="M19.586 0c-.818 0-1.508.19-2.073.565-.563.377-.97.936-1.213 1.68a3.354 3.354 0 0 0-.112.437 8.464 8.464 0 0 0-.078.53 9.39 9.39 0 0 0-.05.727c-.01.282-.013.621-.013 1.016 0 .395.003.734.013 1.017.013.265.027.49.05.727.024.236.047.403.078.53.032.127.07.273.112.437.243.744.65 1.303 1.213 1.68.565.375 1.255.564 2.073.564.785 0 1.458-.189 2.02-.564.564-.377.97-.936 1.214-1.68.043-.164.08-.31.112-.437.031-.127.054-.294.077-.53.024-.237.04-.462.05-.727.01-.283.014-.622.014-1.017 0-.395-.004-.734-.014-1.016a9.388 9.388 0 0 0-.05-.727 8.462 8.462 0 0 0-.077-.53 3.354 3.354 0 0 0-.112-.437c-.244-.744-.65-1.303-1.214-1.68C21.044.19 20.371 0 19.586 0zm0 1.155c.528 0 .953.123 1.272.369.32.246.55.611.69 1.096.027.107.051.21.071.31.02.1.036.226.05.378.013.152.022.337.027.554.005.218.008.485.008.8 0 .316-.003.583-.008.8-.005.218-.014.403-.027.555a3.05 3.05 0 0 1-.05.378 1.925 1.925 0 0 1-.071.31c-.14.485-.37.85-.69 1.096-.319.246-.744.369-1.272.369-.535 0-.963-.123-1.285-.369-.321-.246-.552-.611-.692-1.096a3.078 3.078 0 0 1-.071-.31 3.05 3.05 0 0 1-.05-.378 6.114 6.114 0 0 1-.027-.555 27.61 27.61 0 0 1-.008-.8c0-.315.003-.582.008-.8.005-.217.014-.402.027-.554.013-.152.03-.278.05-.378.02-.1.044-.203.071-.31.14-.485.371-.85.692-1.096.322-.246.75-.369 1.285-.369zM8.217 6.124c-1.864 0-3.024.012-3.378.034a4.93 4.93 0 0 0-.717.083 2.93 2.93 0 0 0-2.35 2.06C1.6 8.97 1.535 9.92 1.535 11.15v1.7c0 1.23.064 2.18.237 2.85a2.93 2.93 0 0 0 2.35 2.06c.234.072.474.1.717.083.354.022 1.514.034 3.378.034 1.865 0 3.025-.012 3.379-.034a4.93 4.93 0 0 0 .717-.083 2.93 2.93 0 0 0 2.35-2.06c.173-.67.237-1.62.237-2.85v-1.7c0-.417-.008-.785-.023-1.107a.464.464 0 0 0-.464-.443h-2.97a.464.464 0 0 0-.465.464v1.483c0 .257.208.465.465.465h1.225c-.034.38-.089.667-.165.862-.135.346-.363.59-.684.735-.321.143-.785.215-1.393.215h-1.842c-.608 0-1.072-.072-1.393-.215-.32-.144-.549-.389-.684-.735-.135-.346-.203-.827-.203-1.444V9.985c0-.617.068-1.098.203-1.444.135-.346.363-.59.684-.735.321-.143.785-.215 1.393-.215h1.842c.608 0 1.072.072 1.393.215.321.144.549.389.684.735.042.11.078.233.107.372a.462.462 0 0 0 .543.363l2.928-.583a.462.462 0 0 0 .366-.549 5.395 5.395 0 0 0-.33-1.039 2.93 2.93 0 0 0-2.35-2.06 4.93 4.93 0 0 0-.717-.083c-.354-.022-1.514-.034-3.379-.034z"/></svg>',
+    SAVE:         '<svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>'
+  };
+
   (function(){
     document.title = CARD.name;
     document.getElementById("js-name").textContent  = CARD.name;
@@ -157,23 +190,30 @@ const CARD = {
     document.getElementById("js-affil").textContent = CARD.affiliation || "";
     document.getElementById("js-foot").textContent  = CARD.name;
 
+    function iconFor(tag){ return ICONS[tag] || ICONS.WEBSITE; }
+
     const list = document.getElementById("js-links");
     (CARD.links || []).forEach(function(item){
       const li = document.createElement("li");
       const a  = document.createElement("a");
       a.className = "row";
       a.href = item.url;
-      if(!item.url.startsWith("mailto:")){ a.target="_blank"; a.rel="noopener"; }
+      a.setAttribute("aria-label", item.tag + ": " + item.label);
+      if(!item.url.startsWith("mailto:") && !item.url.startsWith("tel:")){ a.target="_blank"; a.rel="noopener"; }
+      const lbl = document.createElement("span");
+      lbl.className = "lbl";
+      lbl.textContent = item.label;
       a.innerHTML =
-        '<span class="tag">'+item.tag+'</span>' +
-        '<span class="lbl">'+item.label+'</span>' +
-        '<span class="arrow" aria-hidden="true">→</span>';
+        '<span class="icon" aria-hidden="true">'+iconFor(item.tag)+'</span>';
+      a.appendChild(lbl);
+      a.insertAdjacentHTML("beforeend", '<span class="arrow" aria-hidden="true">→</span>');
       li.appendChild(a);
       list.appendChild(li);
     });
 
     // vCard download — works offline once the page is open
     const btn = document.getElementById("js-save");
+    btn.innerHTML = ICONS.SAVE + '<span>Save contact</span>';
     const v = CARD.vcard || {};
     if(!v.email && !v.phone){ btn.style.display="none"; }
     btn.addEventListener("click", function(){
@@ -183,7 +223,7 @@ const CARD = {
       if(v.email) lines.push("EMAIL:"+v.email);
       if(v.phone) lines.push("TEL:"+v.phone);
       (CARD.links||[]).forEach(function(i){
-        if(!i.url.startsWith("mailto:")) lines.push("URL:"+i.url);
+        if(!i.url.startsWith("mailto:") && !i.url.startsWith("tel:")) lines.push("URL:"+i.url);
       });
       lines.push("END:VCARD");
       const blob = new Blob([lines.join("\r\n")], {type:"text/vcard"});

@@ -1,0 +1,2 @@
+# QR-code generator dependency for make_qr.py
+qrcode[pil]>=7.4

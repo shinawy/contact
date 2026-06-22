@@ -1,0 +1,95 @@
+% =====================================================================
+%  Single-page print-ready business card  (85 mm x 55 mm, ISO 7810 ID-1)
+%  One side: photo + details on the left, QR (-> hosted card) top-right.
+%
+%  Build:  pdflatex card.tex   (or:  make)
+%  Assets needed in this folder:  headshot.jpg   qr.png
+% =====================================================================
+\documentclass[10pt]{article}
+
+% ----- card geometry: exact ID-1 card, zero margins -----
+\usepackage[paperwidth=85mm,paperheight=55mm,margin=0pt]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}                       % Helvetica-like sans
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{fontawesome5}                 % brand/contact icons
+\usepackage{xcolor}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+% =====================================================================
+%  EDIT ONLY THIS BLOCK
+% =====================================================================
+\newcommand{\Name}{Mahmoud A. Elshenawy}
+\newcommand{\Title}{PhD Candidate \textperiodcentered\ Computer Science}
+\newcommand{\Affil}{ACCL, KAUST}
+\newcommand{\Photo}{headshot.jpg}
+\newcommand{\Qr}{qr.png}
+
+% Contact rows shown on the front (icon / value). Comment a line to drop it.
+\newcommand{\ContactRows}{%
+  \row{\faEnvelope}{mahmoud.elshenawy@kaust.edu.sa}%
+  \row{\faGlobe}{shinawy.github.io}%
+  \row{\faOrcid}{0009-0007-5628-0792}%
+  \row{\faGithub}{github.com/shinawy}%
+  \row{\faLinkedin}{in/mahmoud-elshenawy}%
+}
+
+% Colours (match the web card)
+\definecolor{ink}{HTML}{15191E}
+\definecolor{muted}{HTML}{5F6A72}
+\definecolor{accent}{HTML}{0F5E5A}        % deep teal
+\definecolor{accentsoft}{HTML}{E4EFEE}
+\definecolor{cardbg}{HTML}{FFFFFF}
+% =====================================================================
+
+% one contact row: accent icon (fixed-width) + value
+\newcommand{\row}[2]{%
+  \makebox[5mm][l]{\color{accent}\footnotesize #1}%
+  {\color{ink}\footnotesize #2}\par\vspace{2pt}%
+}
+
+\begin{document}
+
+% ----------------------------- FRONT -----------------------------
+\begin{tikzpicture}[remember picture,overlay]
+  % background
+  \fill[cardbg] (current page.south west) rectangle (current page.north east);
+  % accent side bar
+  \fill[accent] (current page.north west) rectangle ($(current page.south west)+(3mm,0)$);
+
+  % circular headshot, top-left
+  \coordinate (pc) at ($(current page.north west)+(15mm,-14mm)$);  % photo centre
+  \begin{scope}
+    \clip (pc) circle (8mm);
+    % 'cover' the circle without distortion: scale so the SHORTER side = 16mm
+    % (=2*radius), overflow is clipped. Landscape photo -> set height; for a
+    % portrait photo swap to width=16mm.
+    \node at (pc) {\includegraphics[height=16mm]{\Photo}};
+  \end{scope}
+  \draw[accent,line width=0.5mm] (pc) circle (8mm);
+
+  % name + title + affiliation, right of photo
+  \node[anchor=north west, text width=52mm, inner sep=0]
+        at ($(current page.north west)+(26mm,-7mm)$) {%
+        {\color{ink}\large\bfseries \Name}\\[1pt]
+        {\color{ink}\scriptsize \Title}\\[0.5pt]
+        {\color{muted}\scriptsize \Affil}};
+
+  % QR block, bottom-right
+  \coordinate (qc) at ($(current page.south east)+(-12mm,12mm)$);  % QR centre
+  \node at (qc) {\includegraphics[width=18mm]{\Qr}};
+
+  % accent rule under the header
+  \draw[accent,line width=0.6mm,line cap=round]
+        ($(current page.north west)+(7mm,-25mm)$) -- ++(12mm,0);
+
+  % contact rows (full width, below the QR)
+  \node[anchor=north west, text width=72mm, inner sep=0]
+        at ($(current page.north west)+(7mm,-29mm)$) {\ContactRows};
+\end{tikzpicture}
+
+\end{document}
